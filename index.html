@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>To-Do List App</title>
+    <title>Calendar Todo List</title>
     <style>
         * {
             margin: 0;
@@ -13,94 +13,234 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
-            padding: 20px;
+            color: #333;
         }
 
         .container {
-            max-width: 600px;
+            display: flex;
+            height: 100vh;
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .left-panel {
+            flex: 1;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .right-panel {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow-y: auto;
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
             text-align: center;
+            margin-bottom: 30px;
         }
 
         .header h1 {
+            color: #1e3c72;
             font-size: 2.5em;
             margin-bottom: 10px;
             font-weight: 300;
         }
 
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-            font-size: 0.9em;
-        }
-
-        .stat {
+        .date-info {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
             text-align: center;
         }
 
-        .stat-number {
+        .calendar-container {
+            margin-bottom: 30px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav {
+            background: #1e3c72;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .calendar-nav:hover {
+            background: #2a5298;
+        }
+
+        .month-year {
             font-size: 1.5em;
             font-weight: bold;
-            display: block;
+            color: #1e3c72;
         }
 
-        .input-section {
-            padding: 30px;
-            border-bottom: 1px solid #eee;
+        .calendar {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
         }
 
-        .input-container {
+        .calendar th, .calendar td {
+            width: 14.28%;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            position: relative;
+        }
+
+        .calendar th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .calendar td {
+            height: 80px;
+            cursor: pointer;
+            transition: all 0.3s;
+            vertical-align: top;
+        }
+
+        .calendar td:hover {
+            background: #f0f7ff;
+        }
+
+        .calendar td.today {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        .calendar td.selected {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+
+        .calendar td.other-month {
+            color: #ccc;
+        }
+
+        .day-number {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .day-todos {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .todo-dot {
+            width: 6px;
+            height: 6px;
+            background: #28a745;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 1px;
+        }
+
+        .todo-dot.completed {
+            background: #6c757d;
+        }
+
+        .tasks-section {
+            flex: 1;
+        }
+
+        .tasks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .selected-date {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .add-task-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .form-row {
             display: flex;
             gap: 10px;
+            margin-bottom: 10px;
         }
 
-        #todoInput {
+        .task-input {
             flex: 1;
-            padding: 15px;
+            padding: 12px;
             border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 14px;
             outline: none;
             transition: border-color 0.3s;
         }
 
-        #todoInput:focus {
-            border-color: #667eea;
+        .task-input:focus {
+            border-color: #1e3c72;
         }
 
-        #addBtn {
-            padding: 15px 25px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .time-input {
+            width: 120px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .add-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
             transition: transform 0.2s;
         }
 
-        #addBtn:hover {
+        .add-btn:hover {
             transform: translateY(-2px);
         }
 
-        .todos-section {
-            padding: 30px;
+        .tasks-list {
+            max-height: 400px;
+            overflow-y: auto;
         }
 
-        .todo-item {
+        .task-item {
             display: flex;
             align-items: center;
             gap: 15px;
@@ -108,46 +248,58 @@
             margin-bottom: 10px;
             background: #f8f9fa;
             border-radius: 10px;
+            border-left: 4px solid #1e3c72;
             transition: all 0.3s;
-            border-left: 4px solid #667eea;
         }
 
-        .todo-item:hover {
+        .task-item:hover {
             transform: translateX(5px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
-        .todo-item.completed {
+        .task-item.completed {
             opacity: 0.6;
             border-left-color: #28a745;
         }
 
-        .todo-item.completed .todo-text {
+        .task-item.completed .task-text {
             text-decoration: line-through;
             color: #6c757d;
         }
 
-        .todo-checkbox {
-            width: 20px;
-            height: 20px;
+        .task-checkbox {
+            width: 18px;
+            height: 18px;
             cursor: pointer;
         }
 
-        .todo-text {
+        .task-content {
             flex: 1;
+        }
+
+        .task-text {
             font-size: 16px;
-            color: #333;
+            margin-bottom: 5px;
         }
 
-        .todo-actions {
+        .task-time {
+            font-size: 12px;
+            color: #666;
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .task-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .edit-btn, .delete-btn {
-            padding: 8px 12px;
+        .task-btn {
+            padding: 6px 10px;
             border: none;
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
             transition: transform 0.2s;
@@ -163,34 +315,8 @@
             color: white;
         }
 
-        .edit-btn:hover, .delete-btn:hover {
+        .task-btn:hover {
             transform: scale(1.1);
-        }
-
-        .controls {
-            padding: 20px 30px;
-            border-top: 1px solid #eee;
-            text-align: center;
-        }
-
-        .clear-btn {
-            padding: 10px 20px;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .clear-btn:hover {
-            background: #c82333;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
         }
 
         .empty-state {
@@ -199,89 +325,301 @@
             color: #666;
         }
 
-        .empty-state h3 {
-            margin-bottom: 10px;
-            color: #333;
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #1e3c72;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .left-panel, .right-panel {
+                flex: none;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>My To-Do List</h1>
+        <!-- Left Panel - Calendar -->
+        <div class="left-panel">
+            <div class="header">
+                <h1>Calendar Todo</h1>
+                <div class="date-info">
+                    <div id="currentDate"></div>
+                </div>
+            </div>
+
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button class="calendar-nav" id="prevMonth">‹</button>
+                    <div class="month-year" id="monthYear"></div>
+                    <button class="calendar-nav" id="nextMonth">›</button>
+                </div>
+                <table class="calendar" id="calendar">
+                    <thead>
+                        <tr>
+                            <th>Sun</th>
+                            <th>Mon</th>
+                            <th>Tue</th>
+                            <th>Wed</th>
+                            <th>Thu</th>
+                            <th>Fri</th>
+                            <th>Sat</th>
+                        </tr>
+                    </thead>
+                    <tbody id="calendarBody">
+                    </tbody>
+                </table>
+            </div>
+
             <div class="stats">
                 <div class="stat">
-                    <span class="stat-number" id="totalCount">0</span>
-                    <span>Total</span>
+                    <span class="stat-number" id="totalTodos">0</span>
+                    <span class="stat-label">Total</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-number" id="pendingCount">0</span>
-                    <span>Pending</span>
+                    <span class="stat-number" id="todayTodos">0</span>
+                    <span class="stat-label">Today</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-number" id="completedCount">0</span>
-                    <span>Completed</span>
+                    <span class="stat-number" id="completedTodos">0</span>
+                    <span class="stat-label">Done</span>
                 </div>
             </div>
         </div>
 
-        <div class="input-section">
-            <div class="input-container">
-                <input type="text" id="todoInput" placeholder="Add a new task..." maxlength="200">
-                <button id="addBtn">Add Task</button>
+        <!-- Right Panel - Tasks -->
+        <div class="right-panel">
+            <div class="tasks-header">
+                <div class="selected-date" id="selectedDate">Today's Tasks</div>
             </div>
-        </div>
 
-        <div class="todos-section">
-            <div id="todosList">
-                <div class="loading">Loading todos...</div>
+            <div class="add-task-form">
+                <div class="form-row">
+                    <input type="text" class="task-input" id="taskInput" placeholder="Add a new task..." maxlength="200">
+                    <input type="time" class="time-input" id="timeInput">
+                    <button class="add-btn" id="addTaskBtn">Add Task</button>
+                </div>
             </div>
-        </div>
 
-        <div class="controls">
-            <button class="clear-btn" id="clearCompletedBtn">Clear Completed</button>
+            <div class="tasks-section">
+                <div class="tasks-list" id="tasksList">
+                    <div class="empty-state">
+                        <h3>No tasks for this day</h3>
+                        <p>Add a task above to get started!</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         const API_BASE = 'http://localhost:5000/api';
+        
+        let currentDate = new Date();
+        let selectedDate = new Date();
+        let calendarData = {};
         let todos = [];
-        let editingId = null;
 
-        // DOM elements
-        const todoInput = document.getElementById('todoInput');
-        const addBtn = document.getElementById('addBtn');
-        const todosList = document.getElementById('todosList');
-        const clearCompletedBtn = document.getElementById('clearCompletedBtn');
-        const totalCount = document.getElementById('totalCount');
-        const pendingCount = document.getElementById('pendingCount');
-        const completedCount = document.getElementById('completedCount');
+        // DOM Elements
+        const monthYearEl = document.getElementById('monthYear');
+        const calendarBodyEl = document.getElementById('calendarBody');
+        const currentDateEl = document.getElementById('currentDate');
+        const selectedDateEl = document.getElementById('selectedDate');
+        const taskInputEl = document.getElementById('taskInput');
+        const timeInputEl = document.getElementById('timeInput');
+        const addTaskBtnEl = document.getElementById('addTaskBtn');
+        const tasksListEl = document.getElementById('tasksList');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
 
-        // Event listeners
-        addBtn.addEventListener('click', addTodo);
-        todoInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addTodo();
+        // Event Listeners
+        prevMonthBtn.addEventListener('click', () => changeMonth(-1));
+        nextMonthBtn.addEventListener('click', () => changeMonth(1));
+        addTaskBtnEl.addEventListener('click', addTask);
+        taskInputEl.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
         });
-        clearCompletedBtn.addEventListener('click', clearCompleted);
 
-        // Load todos on page load
-        loadTodos();
+        // Initialize
+        init();
 
-        async function loadTodos() {
+        async function init() {
+            updateCurrentDate();
+            await loadCalendar();
+            await loadTodayTasks();
+            updateStats();
+        }
+
+        function updateCurrentDate() {
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            currentDateEl.textContent = new Date().toLocaleDateString('en-US', options);
+        }
+
+        async function loadCalendar() {
             try {
-                const response = await fetch(`${API_BASE}/todos`);
-                todos = await response.json();
-                renderTodos();
-                updateStats();
+                const response = await fetch(`${API_BASE}/calendar/${currentDate.getFullYear()}/${currentDate.getMonth() + 1}`);
+                calendarData = await response.json();
+                renderCalendar();
             } catch (error) {
-                console.error('Error loading todos:', error);
-                todosList.innerHTML = '<div class="loading">Error loading todos. Make sure the backend is running.</div>';
+                console.error('Error loading calendar:', error);
             }
         }
 
-        async function addTodo() {
-            const text = todoInput.value.trim();
+        function renderCalendar() {
+            monthYearEl.textContent = `${calendarData.month_name} ${calendarData.year}`;
+            
+            const tbody = calendarBodyEl;
+            tbody.innerHTML = '';
+
+            calendarData.calendar.forEach(week => {
+                const row = document.createElement('tr');
+                
+                week.forEach(day => {
+                    const cell = document.createElement('td');
+                    
+                    if (day === 0) {
+                        cell.classList.add('other-month');
+                        cell.innerHTML = '';
+                    } else {
+                        const dateStr = `${calendarData.year}-${String(calendarData.month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        const isToday = dateStr === new Date().toISOString().split('T')[0];
+                        const isSelected = dateStr === selectedDate.toISOString().split('T')[0];
+                        
+                        if (isToday) cell.classList.add('today');
+                        if (isSelected) cell.classList.add('selected');
+                        
+                        cell.innerHTML = `
+                            <div class="day-number">${day}</div>
+                            <div class="day-todos" id="todos-${dateStr}"></div>
+                        `;
+                        
+                        // Add todos for this day
+                        const dayTodos = calendarData.todos_by_date[dateStr] || [];
+                        const todosEl = cell.querySelector(`#todos-${dateStr}`);
+                        dayTodos.forEach(todo => {
+                            const dot = document.createElement('span');
+                            dot.className = `todo-dot ${todo.completed ? 'completed' : ''}`;
+                            todosEl.appendChild(dot);
+                        });
+                        
+                        cell.addEventListener('click', () => selectDate(dateStr));
+                    }
+                    
+                    row.appendChild(cell);
+                });
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function selectDate(dateStr) {
+            selectedDate = new Date(dateStr);
+            
+            // Update selected date display
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            selectedDateEl.textContent = selectedDate.toLocaleDateString('en-US', options);
+            
+            // Update calendar display
+            renderCalendar();
+            
+            // Load tasks for selected date
+            loadTasksForDate(dateStr);
+        }
+
+        async function loadTodayTasks() {
+            const today = new Date().toISOString().split('T')[0];
+            selectDate(today);
+        }
+
+        async function loadTasksForDate(dateStr) {
+            try {
+                const response = await fetch(`${API_BASE}/todos?date=${dateStr}`);
+                todos = await response.json();
+                renderTasks();
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+            }
+        }
+
+        function renderTasks() {
+            if (todos.length === 0) {
+                tasksListEl.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No tasks for this day</h3>
+                        <p>Add a task above to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort todos by time, then by creation date
+            todos.sort((a, b) => {
+                if (a.time && b.time) {
+                    return a.time.localeCompare(b.time);
+                }
+                if (a.time) return -1;
+                if (b.time) return 1;
+                return new Date(a.created_at) - new Date(b.created_at);
+            });
+
+            tasksListEl.innerHTML = todos.map(todo => `
+                <div class="task-item ${todo.completed ? 'completed' : ''}">
+                    <input type="checkbox" class="task-checkbox" 
+                           ${todo.completed ? 'checked' : ''} 
+                           onchange="toggleTask(${todo.id})">
+                    <div class="task-content">
+                        <div class="task-text">${escapeHtml(todo.text)}</div>
+                        ${todo.time ? `<div class="task-time">${todo.time}</div>` : ''}
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-btn edit-btn" onclick="editTask(${todo.id})">Edit</button>
+                        <button class="task-btn delete-btn" onclick="deleteTask(${todo.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function addTask() {
+            const text = taskInputEl.value.trim();
             if (!text) return;
+
+            const time = timeInputEl.value;
+            const dateStr = selectedDate.toISOString().split('T')[0];
 
             try {
                 const response = await fetch(`${API_BASE}/todos`, {
@@ -289,22 +627,26 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ text }),
+                    body: JSON.stringify({ 
+                        text, 
+                        time, 
+                        date: dateStr 
+                    }),
                 });
 
                 if (response.ok) {
-                    const newTodo = await response.json();
-                    todos.push(newTodo);
-                    todoInput.value = '';
-                    renderTodos();
+                    taskInputEl.value = '';
+                    timeInputEl.value = '';
+                    await loadTasksForDate(dateStr);
+                    await loadCalendar();
                     updateStats();
                 }
             } catch (error) {
-                console.error('Error adding todo:', error);
+                console.error('Error adding task:', error);
             }
         }
 
-        async function toggleTodo(id) {
+        async function toggleTask(id) {
             const todo = todos.find(t => t.id === id);
             if (!todo) return;
 
@@ -318,32 +660,17 @@
                 });
 
                 if (response.ok) {
-                    todo.completed = !todo.completed;
-                    renderTodos();
+                    const dateStr = selectedDate.toISOString().split('T')[0];
+                    await loadTasksForDate(dateStr);
+                    await loadCalendar();
                     updateStats();
                 }
             } catch (error) {
-                console.error('Error toggling todo:', error);
+                console.error('Error toggling task:', error);
             }
         }
 
-        async function deleteTodo(id) {
-            try {
-                const response = await fetch(`${API_BASE}/todos/${id}`, {
-                    method: 'DELETE',
-                });
-
-                if (response.ok) {
-                    todos = todos.filter(t => t.id !== id);
-                    renderTodos();
-                    updateStats();
-                }
-            } catch (error) {
-                console.error('Error deleting todo:', error);
-            }
-        }
-
-        async function editTodo(id) {
+        async function editTask(id) {
             const todo = todos.find(t => t.id === id);
             if (!todo) return;
 
@@ -359,64 +686,51 @@
                     });
 
                     if (response.ok) {
-                        todo.text = newText.trim();
-                        renderTodos();
+                        const dateStr = selectedDate.toISOString().split('T')[0];
+                        await loadTasksForDate(dateStr);
+                        await loadCalendar();
                     }
                 } catch (error) {
-                    console.error('Error editing todo:', error);
+                    console.error('Error editing task:', error);
                 }
             }
         }
 
-        async function clearCompleted() {
+        async function deleteTask(id) {
+            if (!confirm('Are you sure you want to delete this task?')) return;
+
             try {
-                const response = await fetch(`${API_BASE}/todos/clear-completed`, {
+                const response = await fetch(`${API_BASE}/todos/${id}`, {
                     method: 'DELETE',
                 });
 
                 if (response.ok) {
-                    todos = todos.filter(t => !t.completed);
-                    renderTodos();
+                    const dateStr = selectedDate.toISOString().split('T')[0];
+                    await loadTasksForDate(dateStr);
+                    await loadCalendar();
                     updateStats();
                 }
             } catch (error) {
-                console.error('Error clearing completed todos:', error);
+                console.error('Error deleting task:', error);
             }
         }
 
-        function renderTodos() {
-            if (todos.length === 0) {
-                todosList.innerHTML = `
-                    <div class="empty-state">
-                        <h3>No tasks yet!</h3>
-                        <p>Add a task above to get started.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            todosList.innerHTML = todos.map(todo => `
-                <div class="todo-item ${todo.completed ? 'completed' : ''}">
-                    <input type="checkbox" class="todo-checkbox" 
-                           ${todo.completed ? 'checked' : ''} 
-                           onchange="toggleTodo(${todo.id})">
-                    <span class="todo-text">${escapeHtml(todo.text)}</span>
-                    <div class="todo-actions">
-                        <button class="edit-btn" onclick="editTodo(${todo.id})">Edit</button>
-                        <button class="delete-btn" onclick="deleteTodo(${todo.id})">Delete</button>
-                    </div>
-                </div>
-            `).join('');
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            loadCalendar();
         }
 
-        function updateStats() {
-            const total = todos.length;
-            const completed = todos.filter(t => t.completed).length;
-            const pending = total - completed;
-
-            totalCount.textContent = total;
-            pendingCount.textContent = pending;
-            completedCount.textContent = completed;
+        async function updateStats() {
+            try {
+                const response = await fetch(`${API_BASE}/stats`);
+                const stats = await response.json();
+                
+                document.getElementById('totalTodos').textContent = stats.total;
+                document.getElementById('todayTodos').textContent = stats.today.total;
+                document.getElementById('completedTodos').textContent = stats.completed;
+            } catch (error) {
+                console.error('Error updating stats:', error);
+            }
         }
 
         function escapeHtml(text) {
