@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import os
@@ -11,6 +12,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todo_app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 # User model
 class User(db.Model):
@@ -27,12 +29,14 @@ class Todo(db.Model):
     description = db.Column(db.Text)
     completed = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    due_date = db.Column(db.DateTime)
+    tags = db.Column(db.String(200))
+    status = db.Column(db.String(50), default='Not Started')
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # Create tables
 with app.app_context():
     db.create_all()
-    print("Database tables created successfully!")
 
 # Helper function to check if user is logged in
 def login_required(f):
@@ -105,33 +109,44 @@ def logout():
 @login_required
 def dashboard():
     user_id = session['user_id']
-    todos = Todo.query.filter_by(user_id=user_id).order_by(Todo.created_at.desc()).all()
+    tag_filter = request.args.get('tag')
+    
+    if tag_filter:
+        todos = Todo.query.filter_by(user_id=user_id, tags=tag_filter).order_by(Todo.created_at.desc()).all()
+    else:
+        todos = Todo.query.filter_by(user_id=user_id).order_by(Todo.created_at.desc()).all()
+        
     return render_template('dashboard.html', todos=todos)
 
 @app.route('/add_todo', methods=['POST'])
 @login_required
 def add_todo():
-    print("Add todo route called!")  # Debug line
     title = request.form.get('title')
     description = request.form.get('description', '')
+    due_date_str = request.form.get('due_date')
+    tags = request.form.get('tags')
     user_id = session['user_id']
-    
-    print(f"Title: {title}, Description: {description}, User ID: {user_id}")  # Debug line
-    
+
     if not title:
         flash('Title is required!', 'error')
         return redirect(url_for('dashboard'))
-    
+
+    due_date = datetime.strptime(due_date_str, '%Y-%m-%d') if due_date_str else None
+
     try:
-        new_todo = Todo(title=title, description=description, user_id=user_id)
+        new_todo = Todo(
+            title=title,
+            description=description,
+            due_date=due_date,
+            tags=tags,
+            user_id=user_id
+        )
         db.session.add(new_todo)
         db.session.commit()
-        print("Todo added successfully!")  # Debug line
         flash('Todo added successfully!', 'success')
     except Exception as e:
-        print(f"Error adding todo: {e}")  # Debug line
         flash('Error adding todo. Please try again.', 'error')
-    
+
     return redirect(url_for('dashboard'))
 
 @app.route('/toggle_todo/<int:todo_id>')
@@ -149,6 +164,20 @@ def toggle_todo(todo_id):
     
     return redirect(url_for('dashboard'))
 
+@app.route('/update_status/<int:todo_id>/<status>')
+@login_required
+def update_status(todo_id, status):
+    todo = Todo.query.get_or_404(todo_id)
+
+    if todo.user_id != session['user_id']:
+        flash('Unauthorized action', 'error')
+        return redirect(url_for('dashboard'))
+
+    todo.status = status
+    db.session.commit()
+
+    return redirect(url_for('dashboard'))
+
 @app.route('/delete_todo/<int:todo_id>')
 @login_required
 def delete_todo(todo_id):
@@ -164,6 +193,23 @@ def delete_todo(todo_id):
     
     flash('Todo deleted successfully!', 'success')
     return redirect(url_for('dashboard'))
+
+@app.route('/api/todos')
+@login_required
+def api_todos():
+    user_id = session['user_id']
+    todos = Todo.query.filter_by(user_id=user_id).all()
+    
+    events = []
+    for todo in todos:
+        if todo.due_date:
+            events.append({
+                'title': todo.title,
+                'start': todo.due_date.isoformat(),
+                'allDay': True
+            })
+            
+    return jsonify(events)
 
 if __name__ == '__main__':
     app.run(debug=True)
